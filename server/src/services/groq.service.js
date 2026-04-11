@@ -13,7 +13,7 @@ const getOpenAI = () => {
   return _openai
 }
 
-export const chatWithAI = async (messages, systemPrompt) => {
+export const chatWithAI = async (messages, systemPrompt, { temperature = 0.7, max_tokens = 2048 } = {}) => {
   const systemMsg = { role: 'system', content: systemPrompt }
   const allMessages = [systemMsg, ...messages]
 
@@ -21,8 +21,8 @@ export const chatWithAI = async (messages, systemPrompt) => {
     const completion = await getGroq().chat.completions.create({
       model: process.env.GROQ_MODEL || 'llama-3.3-70b-versatile',
       messages: allMessages,
-      max_tokens: 1024,
-      temperature: 0.7,
+      max_tokens,
+      temperature,
     })
     return completion.choices[0]?.message?.content || ''
   } catch (groqErr) {
@@ -31,8 +31,8 @@ export const chatWithAI = async (messages, systemPrompt) => {
       const completion = await getOpenAI().chat.completions.create({
         model: process.env.OPENAI_MODEL || 'gpt-3.5-turbo',
         messages: allMessages,
-        max_tokens: 1024,
-        temperature: 0.7,
+        max_tokens,
+        temperature,
       })
       return completion.choices[0]?.message?.content || ''
     } catch (openaiErr) {

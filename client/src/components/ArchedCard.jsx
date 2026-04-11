@@ -2,12 +2,9 @@ import { motion } from 'framer-motion'
 
 export default function ArchedCard({ item, onClick, isActive, theme = { accent: '#8C3B1F', bg: '#FFFFF0' } }) {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 50 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+    <div
       className={`relative flex-shrink-0 cursor-pointer transition-all duration-700 ${
-        isActive ? 'scale-110 z-10' : 'scale-90 opacity-40 grayscale-[0.5]'
+        isActive ? 'opacity-100 z-10' : 'opacity-40 grayscale-[0.5]'
       }`}
       style={{ width: '450px', height: '650px' }}
       onClick={() => onClick(item)}
@@ -23,7 +20,7 @@ export default function ArchedCard({ item, onClick, isActive, theme = { accent: 
         <img
           src={item.image || item.image_url}
           alt={item.title || item.name}
-          className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
+          className="w-full h-full object-cover transition-transform duration-700"
         />
         
         {/* Overlay with dynamic accent */}
@@ -39,6 +36,6 @@ export default function ArchedCard({ item, onClick, isActive, theme = { accent: 
           </h2>
         </div>
       </div>
-    </motion.div>
+    </div>
   )
 }

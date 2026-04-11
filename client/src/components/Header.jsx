@@ -1,8 +1,9 @@
 import { useState, useEffect, useMemo, useRef } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
-import { User, X } from 'lucide-react'
+import { User, X, LogOut } from 'lucide-react'
 import DecryptedText from './DecryptedText.jsx'
+import MagicBento from './MagicBento.jsx'
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false)
@@ -215,51 +216,95 @@ export default function Header() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[300] flex items-center justify-center p-4"
-            style={{ backdropFilter: 'blur(8px)', backgroundColor: 'rgba(0,0,0,0.6)' }}
+            className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md"
             onClick={() => setShowProfile(false)}
           >
             <motion.div
-              initial={{ scale: 0.9, y: 20 }}
+              initial={{ scale: 0.95, y: 20 }}
               animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.9, y: 20 }}
-              className="bg-[#9da396] border border-white/20 rounded-3xl p-8 max-w-md w-full max-h-[80vh] overflow-y-auto relative text-white"
+              exit={{ scale: 0.95, y: 20 }}
+              className="relative w-full max-w-4xl"
               onClick={(e) => e.stopPropagation()}
             >
-              <button
-                onClick={() => setShowProfile(false)}
-                className="absolute top-5 right-5 p-2 bg-[#8c9285] rounded-full"
-              >
-                <X size={16} className="text-white" />
-              </button>
-              <div className="text-center mb-6">
-                <div className="w-20 h-20 rounded-full bg-[#8c9285] flex items-center justify-center mx-auto mb-4">
-                  <User size={32} className="text-white" />
+              <div className="flex justify-between items-center mb-6 px-4">
+                <div>
+                  <h2 className="text-3xl font-black text-white tracking-tight">Account Overview</h2>
+                  <p className="text-white/40 text-xs font-bold uppercase tracking-[0.2em] mt-1">Health Registry System</p>
                 </div>
-                <h2 className="text-2xl font-bold">{currentUser.name}</h2>
-                <p className="opacity-70">{currentUser.email}</p>
+                <div className="flex gap-3">
+                  <button
+                    onClick={logout}
+                    className="w-12 h-12 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-400 hover:bg-red-500/20 transition-all"
+                    title="Logout"
+                  >
+                    <LogOut size={20} />
+                  </button>
+                  <button
+                    onClick={() => setShowProfile(false)}
+                    className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-white/40 hover:text-white transition-all"
+                  >
+                    <X size={20} />
+                  </button>
+                </div>
               </div>
-              <div className="space-y-3">
-                {[
-                  ['Age', currentUser.age],
-                  ['Gender', currentUser.gender],
-                  ['Height', `${currentUser.height} ${currentUser.height_unit || 'cm'}`],
-                  ['Weight', `${currentUser.weight} ${currentUser.weight_unit || 'kg'}`],
-                  ['Fitness Level', currentUser.fitness_level],
-                  ['Diet', currentUser.diet_type],
-                  ['Skin Type', currentUser.skin_type],
-                ]
-                  .filter(([, v]) => v)
-                  .map(([label, val]) => (
-                    <div
-                      key={label}
-                      className="bg-[#8c9285] rounded-xl px-4 py-3 flex justify-between items-center"
-                    >
-                      <span className="opacity-60 text-sm">{label}</span>
-                      <span className="font-medium capitalize">{val}</span>
-                    </div>
-                  ))}
-              </div>
+
+              <MagicBento 
+                textAutoHide={true}
+                enableStars
+                enableSpotlight
+                enableBorderGlow={true}
+                enableTilt={false}
+                enableMagnetism={false}
+                clickEffect
+                spotlightRadius={400}
+                particleCount={12}
+                glowColor="132, 0, 255"
+                disableAnimations={false}
+                cardData={[
+                  { 
+                    label: 'User Info', 
+                    title: currentUser.name, 
+                    description: currentUser.email, 
+                    color: 'rgba(132, 0, 255, 0.05)' 
+                  },
+                  { 
+                    label: 'Biometrics', 
+                    title: `${currentUser.age} Years`, 
+                    description: currentUser.gender, 
+                    color: 'rgba(255, 255, 255, 0.03)' 
+                  },
+                  { 
+                    label: 'Physical', 
+                    title: `${currentUser.height} ${currentUser.height_unit || 'cm'}`, 
+                    description: 'Height Measurement', 
+                    color: 'rgba(255, 255, 255, 0.03)' 
+                  },
+                  { 
+                    label: 'Physical', 
+                    title: `${currentUser.weight} ${currentUser.weight_unit || 'kg'}`, 
+                    description: 'Weight Measurement', 
+                    color: 'rgba(255, 255, 255, 0.03)' 
+                  },
+                  { 
+                    label: 'Fitness', 
+                    title: currentUser.fitness_level, 
+                    description: 'Conditioning Level', 
+                    color: 'rgba(255, 255, 255, 0.03)' 
+                  },
+                  { 
+                    label: 'Dietary', 
+                    title: currentUser.diet_type, 
+                    description: 'Nutrition Preference', 
+                    color: 'rgba(255, 255, 255, 0.03)' 
+                  },
+                  { 
+                    label: 'Dermatology', 
+                    title: currentUser.skin_type, 
+                    description: 'Complexion Analysis', 
+                    color: 'rgba(255, 255, 255, 0.03)' 
+                  }
+                ]}
+              />
             </motion.div>
           </motion.div>
         )}

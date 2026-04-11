@@ -8,21 +8,34 @@ router.post('/recommendations', async (req, res) => {
     const { query, budget, diet } = req.body
     if (!query?.trim()) return res.status(400).json({ error: 'Query is required' })
 
-    const prompt = `You are a smart grocery shopping assistant for India.
-User request: "${query}"
-Budget: ₹${budget || 500}
-Diet preference: ${diet || 'balanced'}
+    const safeBudget = budget || 500
+    const safeDiet = diet || 'balanced'
 
-Recommend 6 products available on Amazon India or Flipkart.
-Respond ONLY in valid JSON (no markdown, no extra text):
+    const prompt = `You are an expert Indian grocery shopping assistant with deep knowledge of products available on Amazon India and Flipkart.
+
+USER'S REQUEST: "${query}"
+BUDGET LIMIT: ₹${safeBudget} (total for all products combined must not exceed this)
+DIET PREFERENCE: ${safeDiet}
+
+INSTRUCTIONS:
+1. Recommend exactly 6 real, specific products that DIRECTLY match what the user asked for.
+2. Each product price must be realistic for Indian e-commerce (Amazon India / Flipkart actual prices).
+3. The TOTAL cost of all 6 products combined must stay within ₹${safeBudget}.
+4. Each product must be compatible with the "${safeDiet}" diet preference.
+5. Include actual brand names (e.g., "MuscleBlaze Biozyme Whey Protein 1kg" not just "Whey Protein").
+6. If the user asks for supplements, recommend supplements. If vegetables, recommend vegetables. Match the category exactly.
+7. Provide accurate protein content where applicable, or "-" if not relevant.
+8. Give a helpful 2-3 sentence "ai_response" analyzing the user's needs and explaining your recommendations.
+
+Respond ONLY with valid JSON (no markdown fences, no backticks, no extra text before or after):
 {
-  "ai_response": "brief analysis in one line",
+  "ai_response": "2-3 sentence analysis of the user's needs and why these products were chosen",
   "recommendations": [
     {
-      "name": "Product Name",
+      "name": "Full Product Name with Brand and Size",
       "price": "₹299",
       "rating": "4.2",
-      "description": "brief description",
+      "description": "2 sentence description explaining why this product fits the user's needs",
       "protein": "25g per serving",
       "platform": "Amazon",
       "category": "supplement",
@@ -33,7 +46,8 @@ Respond ONLY in valid JSON (no markdown, no extra text):
 
     const response = await chatWithAI(
       [{ role: 'user', content: prompt }],
-      'You are a grocery shopping assistant. Always respond with valid JSON only, no markdown.'
+      'You are an expert Indian grocery and health product shopping assistant. You must respond with ONLY valid JSON — no markdown, no code fences, no explanation outside the JSON. Every product you recommend must be a real product available on Indian e-commerce platforms with realistic pricing. Match the user query precisely.',
+      { temperature: 0.4, max_tokens: 2048 }
     )
 
     const match = response.match(/\{[\s\S]*\}/)

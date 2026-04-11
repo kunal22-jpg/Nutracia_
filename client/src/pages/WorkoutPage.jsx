@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowLeft, ArrowRight } from 'lucide-react'
 import Modal from '../components/Modal.jsx'
 import ArchedCard from '../components/ArchedCard.jsx'
+import Aurora from '../components/Aurora.jsx'
 
 const WORKOUTS = [
   {
@@ -57,50 +58,73 @@ const WORKOUTS = [
 
 export default function WorkoutPage() {
   const [selected, setSelected] = useState(null)
-  const [currentIndex, setCurrentIndex] = useState(0)
+  const [currentIndex, setCurrentIndex] = useState(1)
   const theme = { accent: '#8C3B1F', bg: '#FFFFF0' }
 
-  const nextSlide = () => setCurrentIndex((prev) => (prev + 1) % WORKOUTS.length)
-  const prevSlide = () => setCurrentIndex((prev) => (prev - 1 + WORKOUTS.length) % WORKOUTS.length)
+  const scrollRef = useRef(null)
+  
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      scrollToItem(1);
+    }, 100);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const scrollToItem = (idx) => {
+    if (scrollRef.current && scrollRef.current.children[idx]) {
+      scrollRef.current.children[idx].scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+    }
+  }
+
+  const nextSlide = () => setCurrentIndex((prev) => {
+    const newIdx = (prev + 1) % WORKOUTS.length;
+    scrollToItem(newIdx);
+    return newIdx;
+  })
+  const prevSlide = () => setCurrentIndex((prev) => {
+    const newIdx = (prev - 1 + WORKOUTS.length) % WORKOUTS.length;
+    scrollToItem(newIdx);
+    return newIdx;
+  })
 
   return (
-    <div className="h-screen w-full overflow-hidden flex flex-col relative" style={{ backgroundColor: theme.bg }}>
-      <div className="flex-1 relative flex items-center justify-center pt-10 pb-24">
-        <div className="flex items-center justify-center gap-12 max-w-[95vw]">
-          <div className="relative flex items-center justify-center overflow-visible">
-            <AnimatePresence mode="popLayout">
-              <motion.div 
-                key={currentIndex}
-                className="flex items-center justify-center gap-12"
-                initial={{ opacity: 0, x: 100 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -100 }}
-                transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-              >
-                <div className="hidden lg:block">
-                  <ArchedCard 
-                    item={WORKOUTS[(currentIndex - 1 + WORKOUTS.length) % WORKOUTS.length]} 
-                    isActive={false}
-                    onClick={prevSlide}
-                    theme={theme}
-                  />
-                </div>
+    <div className="h-screen w-full overflow-hidden flex flex-col relative bg-[#050507]">
+      <style>{`
+        .hidden-scrollbar::-webkit-scrollbar { display: none; } 
+        .hidden-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+      `}</style>
+
+      {/* Background (Matching VoicePage) */}
+      <div className="absolute inset-0 bg-[#050507] overflow-hidden z-0">
+        <div className="absolute inset-0 opacity-[0.8]">
+          <Aurora colorStops={['#3b82f6', '#8b5cf6', '#3b82f6']} amplitude={0.9} blend={0.6} />
+        </div>
+        {/* Dotted Grid */}
+        <div className="absolute inset-0 opacity-[0.35]" style={{
+          backgroundImage: `radial-gradient(rgba(255,255,255,0.8) 1px, transparent 1px)`,
+          backgroundSize: '24px 24px'
+        }} />
+        {/* Dark gradient to fade out the top */}
+        <div className="absolute inset-0 bg-gradient-to-b from-[#050507] via-[#050507]/80 to-transparent" />
+      </div>
+
+      <div className="flex-1 relative flex items-center justify-center pt-10 pb-24 z-10">
+        <div className="w-full flex items-center justify-center max-w-[100vw]">
+          <div ref={scrollRef} className="w-full overflow-x-auto flex items-center gap-12 px-[50vw] snap-x snap-mandatory h-[700px] hidden-scrollbar" style={{ paddingLeft: 'calc(50vw - 225px)', paddingRight: 'calc(50vw - 225px)' }}>
+            {WORKOUTS.map((item, i) => (
+              <div key={item.id} className="snap-center shrink-0">
                 <ArchedCard 
-                  item={WORKOUTS[currentIndex]} 
-                  isActive={true} 
-                  onClick={setSelected}
+                  item={item}
+                  isActive={currentIndex === i}
+                  onClick={(clickedItem) => {
+                    setSelected(clickedItem);
+                    setCurrentIndex(i);
+                    scrollToItem(i);
+                  }}
                   theme={theme}
                 />
-                <div className="hidden lg:block">
-                  <ArchedCard 
-                    item={WORKOUTS[(currentIndex + 1) % WORKOUTS.length]} 
-                    isActive={false}
-                    onClick={nextSlide}
-                    theme={theme}
-                  />
-                </div>
-              </motion.div>
-            </AnimatePresence>
+              </div>
+            ))}
           </div>
         </div>
       </div>
